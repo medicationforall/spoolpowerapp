@@ -16,8 +16,8 @@ import streamlit as st
 
 def make_sidebar():
     with st.sidebar:
-        st.title('CadQuery Obelisk Generator')
+        st.title('Spool Power Generator')
         st.markdown("![](https://miniforall.com/image/patreon.png) [Patreon](https://www.patreon.com/medicationforall)")
         st.markdown("[Mini For All](https://miniforall.com)")
-        st.markdown("[Github Code](https://github.com/medicationforall/obeliskterrainapp)")
-        st.markdown("[cqterrain](https://github.com/medicationforall/cqterrain)")
+        st.markdown("[Github Code](https://github.com/medicationforall/spoolpowerapp)")
+        st.markdown("[cqspoolterrain](https://github.com/medicationforall/cqspoolterrain)")

@@ -14,45 +14,10 @@
 
 import streamlit as st
 import streamlit.components.v1 as components
-import cadquery as cq
-from cqspoolterrain import Spool
-from cqterrain import obelisk
 import os
 import time
 
-
-EXPORT_NAME = 'model'
-
-def __make_model_layer(parameters):
-    #model = obelisk(
-    #    base_width=parameters['base_width'],
-    #    base_height=parameters['base_height'],
-    #    inset_width=parameters['inset_width'],
-    #    inset_height=parameters['inset_height'],
-    #    mid_width=parameters['middle_width'],
-    #    mid_height=parameters['middle_height'],
-    #    top_width=parameters['top_width'],
-    #    top_height=parameters['top_height'],
-    #    height=parameters['height'],
-    #    faces=parameters['faces'],
-    #    intersect=parameters['intersect']
-    #).rotate((0,0,1),(0,0,0),parameters['layer_rotate'])
-
-    return model
-
-def __generate_model(parameters):
-    layers = st.session_state['models']
-    model = __make_model_layer(parameters)
-
-    scene = cq.Workplane("XY").union(model)
-    
-    if layers and len(layers) > 0:
-        for layer_params in layers:
-            if layer_params['layer_display']:
-                layer_model = __make_model_layer(layer_params)
-                scene = scene.union(layer_model)
-
-    return scene
+EXPORT_NAME = 'model_combined'
 
 def __stl_preview(color, render):
     # Load and embed the JavaScript file
@@ -87,8 +52,7 @@ def __stl_preview(color, render):
         height = 500
     )
 
-
-def make_model_controls(
+def make_model_controls_combined(
     parameters,
     color,
     render,
@@ -98,25 +62,16 @@ def make_model_controls(
     with st.spinner('Generating Model..'):
         download_name = file_controls['name']
         export_type = file_controls['type']
-        session_id = st.session_state['session_id']
-        model = __generate_model(parameters)
-
-        #create the model file for downloading
-        cq.exporters.export(model,f'{EXPORT_NAME}.{export_type}')
-        cq.exporters.export(model,'app/static/'+f'{EXPORT_NAME}_{session_id}.stl')
-
-        end = time.time()
-        __stl_preview(color, render)
-
+        
         if f'{EXPORT_NAME}.{export_type}' not in os.listdir():
             st.error('The program was not able to generate the mesh.', icon="🚨")
         else:
             with open(f'{EXPORT_NAME}.{export_type}', "rb") as file:
                 btn = st.download_button(
-                        label=f"Download {export_type}",
+                        label=f"Download Combined {export_type}",
                         data=file,
                         file_name=f'{download_name}.{export_type}',
                         mime=f"model/{export_type}"
                     )
-                    
-            st.success(f'Rendered in {int(end-start)} seconds', icon="✅")
+        
+        __stl_preview(color, render)

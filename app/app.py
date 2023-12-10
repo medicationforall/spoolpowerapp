@@ -20,12 +20,17 @@ import glob
 import time
 from datetime import datetime, date
 from pathlib import Path
+import cadquery as cq
+from cqspoolterrain import Spool, Cradle, SpoolCladding, SpoolCladdingGreebled, SpoolCladdingGreebledUnique, PowerStation
 from controls import (
     make_sidebar, 
     make_parameter_controls, 
     make_parameter_controls_layers,
     make_parameter_point,
-    make_model_controls,
+    make_model_controls_cladding,
+    make_model_controls_combined,
+    make_model_controls_cradle,
+    make_model_controls_spool,
     make_file_controls,
     make_code_view
 )
@@ -55,28 +60,31 @@ def __make_tabs():
         add_button, dupe = make_parameter_controls_layers()
     with tab_file:
         file_controls = make_file_controls()
-
  
     #combine tab parameter into one dictionary
     parameters = model_parameters | base | inset | middle | top | dupe
-
-    #with tab_overview:
-    #    col1,col2 = st.columns(2)
-    #    with col1:
-    #        st.write("Current")
-    #    with col2:
-    #        st.write("Layers")
-
-    #    col1,col2 = st.columns(2)
-    #    with col1:
-    #        st.write(parameters)
-    #    with col2:
-    #        st.write(st.session_state['models'])
 
     with tab_code:
         make_code_view(parameters, st.session_state['models'])
 
     return add_button, parameters, file_controls
+
+def __make_model_tabs(model_parameters, file_controls):
+    spool_tab, cradle_tab, cladding_tab, combined_tab = st.tabs([
+    "Spool",
+    "Cradle",
+    "Cladding",
+    "Combined"
+    ])
+
+    with spool_tab:
+        __model_controls(model_parameters, file_controls, "Spool", make_model_controls_spool)
+    with cradle_tab:
+        __model_controls(model_parameters, file_controls, "Cradle", make_model_controls_cradle)
+    with cladding_tab:
+        __model_controls(model_parameters, file_controls, "Cladding", make_model_controls_cladding)
+    with combined_tab:
+        __model_controls(model_parameters, file_controls, "Combined", make_model_controls_combined)
 
 def __initialize_session():
     if 'models' not in st.session_state:
@@ -86,16 +94,16 @@ def __initialize_session():
         st.session_state['session_id'] = uuid4()
 
 
-def __model_controls(model_parameters, file_controls):
+def __model_controls(model_parameters, file_controls, key, callback):
     col1, col2, col3 = st.columns(3)
     with col1:
-        generate_button = st.button('Generate Model')
+        generate_button = st.button(f'Generate {key} Model')
     with col2:
-        color1 = st.color_picker('Model Color', '#E06600', label_visibility="collapsed")
+        color1 = st.color_picker(f'{key} Model Color', '#E06600', label_visibility="collapsed")
     with col3:
-        render = st.selectbox("Render", ["material", "wireframe"], label_visibility="collapsed")
+        render = st.selectbox(f"{key} Render", ["material", "wireframe"], label_visibility="collapsed")
 
-    make_model_controls(
+    callback(
         model_parameters,
         color1,
         render,
@@ -113,12 +121,70 @@ def __handle_add_button_click(add_model_layer_button, model_parameters):
         st.session_state['models'].append(model_parameters)
         st.experimental_rerun()
 
+def __generate_model(parameters, file_controls):
+    bp_power = PowerStation()
+
+    #bp_power.bp_cladding = SpoolCladdingGreebledUnique()
+    bp_power.bp_cladding.seed="uniquePanels"
+
+    bp_power.render_spool = True
+    bp_power.render_cladding = True
+    bp_power.render_cradle = True
+    bp_power.render_stairs = False
+    bp_power.render_control = False
+    bp_power.render_walkway = False
+    bp_power.render_ladder = False
+
+    bp_power.bp_walk.render_rails = True
+    bp_power.bp_walk.rail_width = 4
+    bp_power.bp_walk.rail_height = 20
+    bp_power.bp_walk.rail_chamfer = 10
+
+    bp_power.bp_walk.render_rail_slots = True
+    bp_power.bp_walk.rail_slot_length = 6
+    bp_power.bp_walk.rail_slot_top_padding = 6
+    bp_power.bp_walk.rail_slot_length_offset = 4
+    bp_power.bp_walk.rail_slots_end_margin = 8
+    bp_power.bp_walk.rail_slot_pointed_inner_height = 7
+    bp_power.bp_walk.rail_slot_type = 'box'
+
+    bp_power.make()
+    power = bp_power.build()
+    spool = bp_power.bp_spool.build()
+
+    cradle_scene = bp_power.bp_cradle.build()
+    cladding_scene = bp_power.build_cladding()
+
+    export_type = file_controls['type']
+    session_id = st.session_state['session_id']
+
+    #create the model file for downloading
+    EXPORT_NAME_SPOOL = 'model_spool'
+    cq.exporters.export(spool,f'{EXPORT_NAME_SPOOL}.{export_type}')
+    cq.exporters.export(spool,'app/static/'+f'{EXPORT_NAME_SPOOL}_{session_id}.stl')
+
+    EXPORT_NAME_CRADLE = 'model_cradle'
+    cq.exporters.export(cradle_scene,f'{EXPORT_NAME_CRADLE}.{export_type}')
+    cq.exporters.export(cradle_scene,'app/static/'+f'{EXPORT_NAME_CRADLE}_{session_id}.stl')
+
+    EXPORT_NAME_CLADDING = 'model_cladding'
+    cq.exporters.export(cladding_scene,f'{EXPORT_NAME_CLADDING}.{export_type}')
+    cq.exporters.export(cladding_scene,'app/static/'+f'{EXPORT_NAME_CLADDING}_{session_id}.stl')
+
+    EXPORT_NAME_COMBINED = 'model_combined'
+    cq.exporters.export(power,f'{EXPORT_NAME_COMBINED}.{export_type}')
+    cq.exporters.export(power,'app/static/'+f'{EXPORT_NAME_COMBINED}_{session_id}.stl')
+
+
 def __make_app():
     # main tabs
     add_model_layer_button, model_parameters, file_controls = __make_tabs()
     st.divider()
-    __model_controls(model_parameters, file_controls)
-    __handle_add_button_click(add_model_layer_button, model_parameters)
+    with st.spinner('Generating Model..'):
+        __generate_model(model_parameters, file_controls)
+        __make_model_tabs(model_parameters, file_controls)
+        #__model_controls(model_parameters, file_controls)
+        __handle_add_button_click(add_model_layer_button, model_parameters)
 
 
 def __clean_up_static_files():
