@@ -24,7 +24,8 @@ import cadquery as cq
 from cqspoolterrain import Spool, Cradle, SpoolCladding, SpoolCladdingGreebled, SpoolCladdingGreebledUnique, PowerStation
 from controls import (
     make_sidebar, 
-    make_parameter_controls, 
+    make_spool_controls,
+    make_cradle_controls,
     make_parameter_controls_layers,
     make_parameter_point,
     make_model_controls_cladding,
@@ -36,9 +37,9 @@ from controls import (
 )
 
 def __make_tabs():
-    tab_parameters, tab_base, tab_inset, tab_middle, tab_top, tab_layer, tab_file, tab_code = st.tabs([
-        "Model",
-        "Base",
+    spool_tab, cradle_tab, tab_inset, tab_middle, tab_top, tab_layer, tab_file, tab_code = st.tabs([
+        "Spool",
+        "Cradle",
         "Inset",
         "Middle",
         "Top", 
@@ -46,10 +47,10 @@ def __make_tabs():
         "File",
         "Code",
         ])
-    with tab_parameters:
-        model_parameters = make_parameter_controls()
-    with tab_base:
-        base = make_parameter_point('base', 3.0, 30.0)
+    with spool_tab:
+        spool_parameters = make_spool_controls()
+    with cradle_tab:
+        cradle_parameters = make_cradle_controls()
     with tab_inset:
         inset = make_parameter_point('inset', 5.0, 15.0)
     with tab_middle:
@@ -62,10 +63,11 @@ def __make_tabs():
         file_controls = make_file_controls()
  
     #combine tab parameter into one dictionary
-    parameters = model_parameters | base | inset | middle | top | dupe
+    parameters = spool_parameters | cradle_parameters | inset | middle | top | dupe
 
     with tab_code:
-        make_code_view(parameters, st.session_state['models'])
+        pass
+        #make_code_view(parameters, st.session_state['models'])
 
     return add_button, parameters, file_controls
 
@@ -124,12 +126,25 @@ def __handle_add_button_click(add_model_layer_button, model_parameters):
 def __generate_model(parameters, file_controls):
     bp_power = PowerStation()
 
+    bp_power.bp_spool.height = parameters["spool_height"]
+    bp_power.bp_spool.radius = parameters["spool_radius"]
+    bp_power.bp_spool.cut_radius = parameters["spool_cut_radius"]
+    bp_power.bp_spool.wall_width = parameters["spool_wall_width"]
+    bp_power.bp_spool.internal_wall_width = parameters["spool_internal_wall_width"]
+    bp_power.bp_spool.internal_z_translate = parameters["spool_internal_z_translate"]
+
     #bp_power.bp_cladding = SpoolCladdingGreebledUnique()
     bp_power.bp_cladding.seed="uniquePanels"
 
     bp_power.render_spool = True
     bp_power.render_cladding = True
+
     bp_power.render_cradle = True
+    bp_power.bp_cradle.length = parameters["cradle_length"]
+    bp_power.bp_cradle.width = parameters["cradle_width"]
+    bp_power.bp_cradle.height = parameters["cradle_height"]
+    bp_power.bp_cradle.angle = parameters["cradle_angle"]
+
     bp_power.render_stairs = False
     bp_power.render_control = False
     bp_power.render_walkway = False

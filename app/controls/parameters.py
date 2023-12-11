@@ -14,17 +14,69 @@
 
 import streamlit as st
 
-def make_parameter_controls():
-    col1, col2, col3 = st.columns(3)
+def make_spool_controls():
+    col1, col2, col3, col4, col5, col6 = st.columns(6)
     with col1:
-        height = st.number_input("Height",min_value=1.0, value=110.0,step=1.0)
+        spool_height = st.number_input(
+            "height",
+            key="spool_height",
+            min_value=10.0, 
+            max_value=200.0, 
+            value=60.0 ,
+            step=1.0
+        )
     with col2:
-        faces = st.number_input("Faces",min_value=2, max_value=30,  value=4,step=1)
+        spool_radius = st.number_input(
+            "radius",
+            key="spool_radius",
+            min_value=10.0, 
+            max_value=400.0, 
+            value=97.5, 
+            step=1.0
+        )
     with col3:
-        intersect = st.checkbox("Intersect", True)
+        spool_cut_radius = st.number_input(
+            "cut radius",
+            key="spool_cut_radius",
+            min_value=5.0, 
+            max_value=390.0,  
+            value=36.5, 
+            step=1.0
+        )
+    with col4:
+        spool_wall_width = st.number_input(
+            "wall width",
+            key="spool_wall_width",
+            min_value=1.0, 
+            max_value=100.0, 
+            value=4.0 ,
+            step=1.0
+        )
+    with col5:
+        spool_internal_wall_width = st.number_input(
+            "internal width",
+            key="spool_internal_wall_width",
+            min_value=1.0, 
+            max_value=100.0, 
+            value=3.0,
+            step=1.0
+        )
+    with col6:
+        spool_internal_z_translate = st.number_input(
+            "z translate",
+            key="spool_internal_z_translate",
+            min_value=-100.0, 
+            max_value=100.0, 
+            value=0.0,
+            step=1.0
+        )
+
 
     return {
-        'height':height,
-        'faces':faces,
-        'intersect':intersect
+        'spool_height':spool_height,
+        'spool_radius':spool_radius,
+        'spool_cut_radius':spool_cut_radius,
+        'spool_wall_width':spool_wall_width,
+        'spool_internal_wall_width':spool_internal_wall_width,
+        'spool_internal_z_translate':spool_internal_z_translate
     }
