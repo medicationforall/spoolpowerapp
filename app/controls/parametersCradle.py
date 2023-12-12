@@ -45,7 +45,7 @@ def make_cradle_controls():
             key="cradle_height",
             min_value=1.0, 
             max_value=200.0, 
-            value=60.0,
+            value=63.0,
             step=1.0
         )
     with col4:
@@ -54,7 +54,7 @@ def make_cradle_controls():
             key="cradle_angle",
             min_value=-360.0, 
             max_value=360.0, 
-            value=45.0 ,
+            value=45.0,
             step=1.0
         )
 

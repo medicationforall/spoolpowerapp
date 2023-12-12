@@ -15,11 +15,12 @@
 import streamlit as st
 
 def make_spool_controls():
-    col1, col2, col3, col4, col5, col6 = st.columns(6)
+    col1, col2, col3 = st.columns(3)
     with col1:
         spool_height = st.number_input(
             "height",
             key="spool_height",
+            help='"height" of the spool turned on its side',
             min_value=10.0, 
             max_value=200.0, 
             value=60.0 ,
@@ -29,6 +30,7 @@ def make_spool_controls():
         spool_radius = st.number_input(
             "radius",
             key="spool_radius",
+            help='Outside of the spool radius',
             min_value=10.0, 
             max_value=400.0, 
             value=97.5, 
@@ -38,12 +40,15 @@ def make_spool_controls():
         spool_cut_radius = st.number_input(
             "cut radius",
             key="spool_cut_radius",
+            help='Inside of the spool radius',
             min_value=5.0, 
             max_value=390.0,  
             value=36.5, 
             step=1.0
         )
-    with col4:
+
+    col1, col2, col3 = st.columns(3)    
+    with col1:
         spool_wall_width = st.number_input(
             "wall width",
             key="spool_wall_width",
@@ -52,7 +57,7 @@ def make_spool_controls():
             value=4.0 ,
             step=1.0
         )
-    with col5:
+    with col2:
         spool_internal_wall_width = st.number_input(
             "internal width",
             key="spool_internal_wall_width",
@@ -61,7 +66,7 @@ def make_spool_controls():
             value=3.0,
             step=1.0
         )
-    with col6:
+    with col3:
         spool_internal_z_translate = st.number_input(
             "z translate",
             key="spool_internal_z_translate",

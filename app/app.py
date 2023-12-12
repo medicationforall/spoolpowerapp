@@ -26,6 +26,7 @@ from controls import (
     make_sidebar, 
     make_spool_controls,
     make_cradle_controls,
+    make_cladding_controls,
     make_parameter_controls_layers,
     make_parameter_point,
     make_model_controls_cladding,
@@ -37,10 +38,10 @@ from controls import (
 )
 
 def __make_tabs():
-    spool_tab, cradle_tab, tab_inset, tab_middle, tab_top, tab_layer, tab_file, tab_code = st.tabs([
+    spool_tab, cradle_tab, cladding_tab, tab_middle, tab_top, tab_layer, tab_file, tab_code = st.tabs([
         "Spool",
         "Cradle",
-        "Inset",
+        "Cladding",
         "Middle",
         "Top", 
         "Layers",
@@ -51,8 +52,8 @@ def __make_tabs():
         spool_parameters = make_spool_controls()
     with cradle_tab:
         cradle_parameters = make_cradle_controls()
-    with tab_inset:
-        inset = make_parameter_point('inset', 5.0, 15.0)
+    with cladding_tab:
+        cladding_parameters = make_cladding_controls()
     with tab_middle:
         middle = make_parameter_point('middle', 15.0, 30.0)
     with tab_top:
@@ -63,7 +64,7 @@ def __make_tabs():
         file_controls = make_file_controls()
  
     #combine tab parameter into one dictionary
-    parameters = spool_parameters | cradle_parameters | inset | middle | top | dupe
+    parameters = spool_parameters | cradle_parameters | cladding_parameters #| middle | top | dupe
 
     with tab_code:
         pass
@@ -138,6 +139,10 @@ def __generate_model(parameters, file_controls):
 
     bp_power.render_spool = True
     bp_power.render_cladding = True
+    bp_power.bp_cladding.count = parameters["cladding_count"]
+    bp_power.bp_cladding.clad_width = parameters["clading_width"]
+    bp_power.bp_cladding.clad_height = parameters["cladding_height"]
+    bp_power.bp_cladding.clad_inset = parameters["cladding_inset"]
 
     bp_power.render_cradle = True
     bp_power.bp_cradle.length = parameters["cradle_length"]
@@ -192,9 +197,20 @@ def __generate_model(parameters, file_controls):
 
 
 def __make_app():
+    st.markdown("""
+        <style>
+               .block-container {
+                    padding-top: 1rem;
+                }
+        </style>
+        """, unsafe_allow_html=True)
+
     # main tabs
     add_model_layer_button, model_parameters, file_controls = __make_tabs()
-    st.divider()
+
+    #this is the hr tag
+    #st.divider()
+
     with st.spinner('Generating Model..'):
         __generate_model(model_parameters, file_controls)
         __make_model_tabs(model_parameters, file_controls)
