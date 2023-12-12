@@ -17,8 +17,7 @@
 import streamlit as st
 from uuid import uuid4
 import glob
-import time
-from datetime import datetime, date
+from datetime import datetime
 from pathlib import Path
 import cadquery as cq
 from cqspoolterrain import SpoolCladding, SpoolCladdingGreebled, SpoolCladdingGreebledUnique, PowerStation
@@ -27,39 +26,36 @@ from controls import (
     make_spool_controls,
     make_cradle_controls,
     make_cladding_controls,
-    make_parameter_point,
     make_model_controls_cladding,
     make_model_controls_combined,
     make_model_controls_cradle,
     make_model_controls_spool,
-    make_file_controls,
     make_code_view
 )
 
 def __make_tabs():
-    power_tab,spool_tab, cradle_tab, cladding_tab, tab_file, tab_code = st.tabs([
+    power_tab,spool_tab, cradle_tab, cladding_tab, tab_code = st.tabs([
         "Power Station",
         "Spool",
         "Cradle",
         "Cladding",
-        "File",
         "Code",
         ])
-    with tab_file:
-        file_controls = make_file_controls()
     with power_tab:
-        col1, col2, col3 = st.columns(3)
+        col1, col2, col3, col4 = st.columns(4)
         with col1:
             generate_button = st.button(f'Generate Model')
         with col2:
-            color1 = st.color_picker(f'Model Color', '#E06600', label_visibility="collapsed")
+            color1 = st.color_picker(f'Model Color', '#E06600', label_visibility="collapsed", key="model_color")
         with col3:
-            render = st.selectbox(f"Render", ["material", "wireframe"], label_visibility="collapsed")
+            render = st.selectbox(f"Render", ["material", "wireframe"], label_visibility="collapsed", key="model_render")
+        with col4:
+            export_type = st.selectbox("File type",('stl','step'), key="export_type")
 
         make_model_controls_combined(
             color1,
             render,
-            file_controls
+            export_type
         )
     with spool_tab:
         spool_parameters = make_spool_controls()
@@ -67,7 +63,7 @@ def __make_tabs():
         make_model_controls_spool(
             color1,
             render,
-            file_controls
+            export_type
         )
     with cradle_tab:
         cradle_parameters = make_cradle_controls()
@@ -75,7 +71,7 @@ def __make_tabs():
         make_model_controls_cradle(
             color1,
             render,
-            file_controls
+            export_type
         )
     with cladding_tab:
         cladding_parameters = make_cladding_controls()
@@ -83,18 +79,19 @@ def __make_tabs():
         make_model_controls_cladding(
             color1,
             render,
-            file_controls
+            export_type
         )
 
 
     #combine tab parameter into one dictionary
     parameters = spool_parameters | cradle_parameters | cladding_parameters #| middle | top | dupe
+    parameters['export_type'] = export_type
 
     with tab_code:
         pass
         #make_code_view(parameters, st.session_state['models'])
 
-    return parameters, file_controls
+    return parameters
 
 def __initialize_session():
     if 'init' not in st.session_state:
@@ -103,7 +100,7 @@ def __initialize_session():
     if "session_id" not in st.session_state:
         st.session_state['session_id'] = uuid4()
 
-def __generate_model(parameters, file_controls):
+def __generate_model(parameters):
     bp_power = PowerStation()
 
     bp_power.bp_spool.height = parameters["spool_height"]
@@ -154,7 +151,7 @@ def __generate_model(parameters, file_controls):
     cradle_scene = bp_power.bp_cradle.build()
     cladding_scene = bp_power.build_cladding()
 
-    export_type = file_controls['type']
+    export_type = parameters['export_type']
     session_id = st.session_state['session_id']
 
     #create the model file for downloading
@@ -200,31 +197,19 @@ def __make_app():
                 'cladding_count': 17, 
                 'clading_width': 33.0, 
                 'cladding_height': 4.0, 
-                'cladding_inset': 5.0
+                'cladding_inset': 5.0,
+                'export_type':'stl'
             }
 
-            file_controls = {
-                'type': 'stl'
-            }
-            __generate_model(model_parameters, file_controls)
-            model_parameters, file_controls = __make_tabs()
-
-            st.session_state['type'] = file_controls['type']
+            __generate_model(model_parameters)
+            model_parameters = __make_tabs()
             st.session_state['init'] = False
     else:
         with st.spinner('Generating Model..'):
-            file_controls = {
-                'type': st.session_state['type']
-            }
-
-            #todo I have no idea how the individual model parameters are being written to session state.
-            __generate_model(st.session_state, file_controls)
-            model_parameters, file_controls = __make_tabs()
-
-            st.session_state['type'] = file_controls['type']
+            __generate_model(st.session_state)
+            model_parameters = __make_tabs()
             
-
-    #st.write(st.session_state)
+    st.write(st.session_state)
 
 
 def __clean_up_static_files():

@@ -57,10 +57,8 @@ def __stl_preview(color, render):
 def make_model_controls_cradle(
     color,
     render,
-    file_controls
+    export_type
 ):
-    export_type = file_controls['type']
-
     if f'{EXPORT_NAME}.{export_type}' not in os.listdir():
         st.error('The program was not able to generate the mesh.', icon="🚨")
     else:
