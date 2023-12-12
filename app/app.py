@@ -88,8 +88,7 @@ def __make_tabs():
     parameters['export_type'] = export_type
 
     with tab_code:
-        pass
-        #make_code_view(parameters, st.session_state['models'])
+        make_code_view(parameters)
 
     return parameters
 
