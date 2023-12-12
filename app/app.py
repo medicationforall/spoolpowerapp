@@ -100,6 +100,9 @@ def __initialize_session():
         st.session_state['session_id'] = uuid4()
 
 def __generate_model(parameters):
+    export_type = parameters['export_type']
+    session_id = st.session_state['session_id']
+
     cladding_type_param = parameters["cladding_type"]
     cladding_type = SpoolCladding
     cladding_types = {
@@ -162,9 +165,6 @@ def __generate_model(parameters):
 
     cradle_scene = bp_power.bp_cradle.build()
     cladding_scene = bp_power.build_cladding()
-
-    export_type = parameters['export_type']
-    session_id = st.session_state['session_id']
 
     #create the model file for downloading
     EXPORT_NAME_SPOOL = 'model_spool'
@@ -243,7 +243,7 @@ def __clean_up_static_files():
 
 if __name__ == "__main__":
     st.set_page_config(
-        page_title="CadQuery Obelisk Generator",
+        page_title="Spool Power Generator",
         page_icon="🧊"
     )
     __initialize_session()

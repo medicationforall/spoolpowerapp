@@ -1,4 +1,5 @@
 ## Main - wip
+* Fix page title
 
 ### 1.0.0
 
