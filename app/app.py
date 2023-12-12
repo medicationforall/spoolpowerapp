@@ -52,7 +52,6 @@ def __make_tabs():
         with col4:
             render = st.selectbox(f"Render", ["material", "wireframe"], label_visibility="collapsed", key="model_render")
 
-
         make_model_controls_combined(
             color1,
             render,
@@ -102,6 +101,19 @@ def __initialize_session():
         st.session_state['session_id'] = uuid4()
 
 def __generate_model(parameters):
+    cladding_type_param = parameters["cladding_type"]
+    cladding_type = SpoolCladding
+    cladding_types = {
+        "plain":SpoolCladding, 
+        "Greebled":SpoolCladdingGreebled, 
+        "Greebled Unique":SpoolCladdingGreebledUnique
+    }
+
+    if cladding_type_param in cladding_types:
+        cladding_type = cladding_types[cladding_type_param]
+    else:
+        raise Exception(f"Uncrecognized cladding type {cladding_type_param}")
+
     bp_power = PowerStation()
 
     bp_power.bp_spool.height = parameters["spool_height"]
@@ -111,8 +123,8 @@ def __generate_model(parameters):
     bp_power.bp_spool.internal_wall_width = parameters["spool_internal_wall_width"]
     bp_power.bp_spool.internal_z_translate = parameters["spool_internal_z_translate"]
 
-    #bp_power.bp_cladding = SpoolCladdingGreebledUnique()
-    bp_power.bp_cladding.seed="uniquePanels"
+    bp_power.bp_cladding = cladding_type()
+    bp_power.bp_cladding.seed=parameters["cladding_seed"]
 
     bp_power.render_spool = True
     bp_power.render_cladding = True
@@ -195,9 +207,11 @@ def __make_app():
                 'cradle_width': 75.0, 
                 'cradle_height': 63.0, 
                 'cradle_angle': 45.0, 
+                'cladding_type':'plain',
+                'cladding_seed':'power!',
                 'cladding_count': 17, 
                 'clading_width': 33.0, 
-                'cladding_height': 4.0, 
+                'cladding_height': 5.0, 
                 'cladding_inset': 5.0,
                 'export_type':'stl'
             }

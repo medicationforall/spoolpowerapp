@@ -50,27 +50,49 @@ def make_cladding_controls():
         cladding_height = st.number_input(
             "Clad Height",
             key="cladding_height",
-            help="Height of the cladding panels",
+            help="Height of each panel",
             min_value=1.0, 
             max_value=100.0, 
-            value=4.0,
+            value=5.0,
             step=1.0
         )
     with col4:
         cladding_inset = st.number_input(
             "Clad Inset",
             key="cladding_inset",
-            help="Inset into the the spool",
+            help="Inset into the spool",
             min_value=1.0, 
             max_value=400.0, 
             value=5.0,
             step=1.0
         )
+
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        cladding_seed = st.text_input(
+            "Seed",
+            key="cladding_seed",
+            help="Determines the random pattern",
+            value="power!"
+        )
+    with col2:
+        st.warning('Cladding Type is a performance drain, set this last!', icon="⚠️")
+    with col3:
+        cladding_type = st.selectbox(
+            "Cladding Type", 
+            ["plain", "Greebled","Greebled Unique"], 
+            key="cladding_type",
+            help="This is a performance drain, set this last!"
+        )
+
+
     
 
     return {
         'cladding_count':cladding_count,
         'clading_width':clading_width,
         'cladding_height':cladding_height,
-        'cladding_inset':cladding_inset
+        'cladding_inset':cladding_inset,
+        'cladding_type':cladding_type,
+        'cladding_seed':cladding_seed
     }
