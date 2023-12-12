@@ -46,11 +46,12 @@ def __make_tabs():
         with col1:
             generate_button = st.button(f'Generate Model')
         with col2:
-            color1 = st.color_picker(f'Model Color', '#E06600', label_visibility="collapsed", key="model_color")
+            export_type = st.selectbox("File type",('stl','step'), key="export_type", label_visibility="collapsed")
         with col3:
-            render = st.selectbox(f"Render", ["material", "wireframe"], label_visibility="collapsed", key="model_render")
+            color1 = st.color_picker(f'Model Color', '#E06600', label_visibility="collapsed", key="model_color")
         with col4:
-            export_type = st.selectbox("File type",('stl','step'), key="export_type")
+            render = st.selectbox(f"Render", ["material", "wireframe"], label_visibility="collapsed", key="model_render")
+
 
         make_model_controls_combined(
             color1,
@@ -84,7 +85,7 @@ def __make_tabs():
 
 
     #combine tab parameter into one dictionary
-    parameters = spool_parameters | cradle_parameters | cladding_parameters #| middle | top | dupe
+    parameters = spool_parameters | cradle_parameters | cladding_parameters
     parameters['export_type'] = export_type
 
     with tab_code:
@@ -209,7 +210,7 @@ def __make_app():
             __generate_model(st.session_state)
             model_parameters = __make_tabs()
             
-    st.write(st.session_state)
+    #st.write(st.session_state)
 
 
 def __clean_up_static_files():
