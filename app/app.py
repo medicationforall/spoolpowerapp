@@ -21,13 +21,12 @@ import time
 from datetime import datetime, date
 from pathlib import Path
 import cadquery as cq
-from cqspoolterrain import Spool, Cradle, SpoolCladding, SpoolCladdingGreebled, SpoolCladdingGreebledUnique, PowerStation
+from cqspoolterrain import SpoolCladding, SpoolCladdingGreebled, SpoolCladdingGreebledUnique, PowerStation
 from controls import (
     make_sidebar, 
     make_spool_controls,
     make_cradle_controls,
     make_cladding_controls,
-    make_parameter_controls_layers,
     make_parameter_point,
     make_model_controls_cladding,
     make_model_controls_combined,
@@ -38,31 +37,56 @@ from controls import (
 )
 
 def __make_tabs():
-    spool_tab, cradle_tab, cladding_tab, tab_middle, tab_top, tab_layer, tab_file, tab_code = st.tabs([
+    power_tab,spool_tab, cradle_tab, cladding_tab, tab_file, tab_code = st.tabs([
+        "Power Station",
         "Spool",
         "Cradle",
         "Cladding",
-        "Middle",
-        "Top", 
-        "Layers",
         "File",
         "Code",
         ])
-    with spool_tab:
-        spool_parameters = make_spool_controls()
-    with cradle_tab:
-        cradle_parameters = make_cradle_controls()
-    with cladding_tab:
-        cladding_parameters = make_cladding_controls()
-    with tab_middle:
-        middle = make_parameter_point('middle', 15.0, 30.0)
-    with tab_top:
-        top = make_parameter_point('top', 70.0, 15.0)
-    with tab_layer:
-        add_button, dupe = make_parameter_controls_layers()
     with tab_file:
         file_controls = make_file_controls()
- 
+    with power_tab:
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            generate_button = st.button(f'Generate Model')
+        with col2:
+            color1 = st.color_picker(f'Model Color', '#E06600', label_visibility="collapsed")
+        with col3:
+            render = st.selectbox(f"Render", ["material", "wireframe"], label_visibility="collapsed")
+
+        make_model_controls_combined(
+            color1,
+            render,
+            file_controls
+        )
+    with spool_tab:
+        spool_parameters = make_spool_controls()
+
+        make_model_controls_spool(
+            color1,
+            render,
+            file_controls
+        )
+    with cradle_tab:
+        cradle_parameters = make_cradle_controls()
+
+        make_model_controls_cradle(
+            color1,
+            render,
+            file_controls
+        )
+    with cladding_tab:
+        cladding_parameters = make_cladding_controls()
+
+        make_model_controls_cladding(
+            color1,
+            render,
+            file_controls
+        )
+
+
     #combine tab parameter into one dictionary
     parameters = spool_parameters | cradle_parameters | cladding_parameters #| middle | top | dupe
 
@@ -70,59 +94,14 @@ def __make_tabs():
         pass
         #make_code_view(parameters, st.session_state['models'])
 
-    return add_button, parameters, file_controls
-
-def __make_model_tabs(model_parameters, file_controls):
-    spool_tab, cradle_tab, cladding_tab, combined_tab = st.tabs([
-    "Spool",
-    "Cradle",
-    "Cladding",
-    "Combined"
-    ])
-
-    with spool_tab:
-        __model_controls(model_parameters, file_controls, "Spool", make_model_controls_spool)
-    with cradle_tab:
-        __model_controls(model_parameters, file_controls, "Cradle", make_model_controls_cradle)
-    with cladding_tab:
-        __model_controls(model_parameters, file_controls, "Cladding", make_model_controls_cladding)
-    with combined_tab:
-        __model_controls(model_parameters, file_controls, "Combined", make_model_controls_combined)
+    return parameters, file_controls
 
 def __initialize_session():
-    if 'models' not in st.session_state:
-        st.session_state['models'] = []
+    if 'init' not in st.session_state:
+        st.session_state['init'] = True
 
     if "session_id" not in st.session_state:
         st.session_state['session_id'] = uuid4()
-
-
-def __model_controls(model_parameters, file_controls, key, callback):
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        generate_button = st.button(f'Generate {key} Model')
-    with col2:
-        color1 = st.color_picker(f'{key} Model Color', '#E06600', label_visibility="collapsed")
-    with col3:
-        render = st.selectbox(f"{key} Render", ["material", "wireframe"], label_visibility="collapsed")
-
-    callback(
-        model_parameters,
-        color1,
-        render,
-        file_controls
-    )
-
-def __handle_add_button_click(add_model_layer_button, model_parameters):
-    if add_model_layer_button:
-        # fix layer name dupes
-        if len(st.session_state['models']) > 0:
-            for model in st.session_state['models']:
-                if model_parameters['layer_name']==model['layer_name']:
-                    model_parameters['layer_name'] += " copy"
-
-        st.session_state['models'].append(model_parameters)
-        st.experimental_rerun()
 
 def __generate_model(parameters, file_controls):
     bp_power = PowerStation()
@@ -197,25 +176,55 @@ def __generate_model(parameters, file_controls):
 
 
 def __make_app():
-    st.markdown("""
-        <style>
-               .block-container {
-                    padding-top: 1rem;
-                }
-        </style>
-        """, unsafe_allow_html=True)
+    #st.markdown("""
+    #    <style>
+    #           .block-container {
+    ##                padding-top: 1rem;
+    #            }
+    #    </style>
+    #    """, unsafe_allow_html=True)
 
-    # main tabs
-    add_model_layer_button, model_parameters, file_controls = __make_tabs()
+    if st.session_state['init']:
+        with st.spinner('Starting Application..'):
+            model_parameters = {
+                'spool_height': 60.0, 
+                'spool_radius': 97.5, 
+                'spool_cut_radius': 36.5, 
+                'spool_wall_width': 4.0, 
+                'spool_internal_wall_width': 3.0, 
+                'spool_internal_z_translate': 0.0, 
+                'cradle_length': 150.0, 
+                'cradle_width': 75.0, 
+                'cradle_height': 63.0, 
+                'cradle_angle': 45.0, 
+                'cladding_count': 17, 
+                'clading_width': 33.0, 
+                'cladding_height': 4.0, 
+                'cladding_inset': 5.0
+            }
 
-    #this is the hr tag
-    #st.divider()
+            file_controls = {
+                'type': 'stl'
+            }
+            __generate_model(model_parameters, file_controls)
+            model_parameters, file_controls = __make_tabs()
 
-    with st.spinner('Generating Model..'):
-        __generate_model(model_parameters, file_controls)
-        __make_model_tabs(model_parameters, file_controls)
-        #__model_controls(model_parameters, file_controls)
-        __handle_add_button_click(add_model_layer_button, model_parameters)
+            st.session_state['type'] = file_controls['type']
+            st.session_state['init'] = False
+    else:
+        with st.spinner('Generating Model..'):
+            file_controls = {
+                'type': st.session_state['type']
+            }
+
+            #todo I have no idea how the individual model parameters are being written to session state.
+            __generate_model(st.session_state, file_controls)
+            model_parameters, file_controls = __make_tabs()
+
+            st.session_state['type'] = file_controls['type']
+            
+
+    #st.write(st.session_state)
 
 
 def __clean_up_static_files():

@@ -10,7 +10,5 @@ from .parametersCradle import make_cradle_controls
 from .parametersCladding import make_cladding_controls
 
 from .paramPoint import make_parameter_point
-from .parametersLayers import make_parameter_controls_layers
 from .sidebar import  make_sidebar
-from .layersTable import layers_table
 from .codeView import make_code_view

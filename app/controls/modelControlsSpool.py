@@ -53,25 +53,21 @@ def __stl_preview(color, render):
     )
 
 def make_model_controls_spool(
-    parameters,
     color,
     render,
     file_controls
 ):
-    start = time.time()
-    with st.spinner('Generating Model..'):
-        download_name = file_controls['name']
-        export_type = file_controls['type']
-        
-        if f'{EXPORT_NAME}.{export_type}' not in os.listdir():
-            st.error('The program was not able to generate the mesh.', icon="🚨")
-        else:
-            with open(f'{EXPORT_NAME}.{export_type}', "rb") as file:
-                btn = st.download_button(
-                        label=f"Download Spool {export_type}",
-                        data=file,
-                        file_name=f'{download_name}.{export_type}',
-                        mime=f"model/{export_type}"
-                    )
+    export_type = file_controls['type']
+    
+    if f'{EXPORT_NAME}.{export_type}' not in os.listdir():
+        st.error('The program was not able to generate the mesh.', icon="🚨")
+    else:
+        with open(f'{EXPORT_NAME}.{export_type}', "rb") as file:
+            btn = st.download_button(
+                    label=f"Download Spool {export_type}",
+                    data=file,
+                    file_name=f'{EXPORT_NAME}.{export_type}',
+                    mime=f"model/{export_type}"
+                )
 
-        __stl_preview(color, render)
+    __stl_preview(color, render)
