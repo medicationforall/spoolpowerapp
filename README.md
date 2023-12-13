@@ -1,10 +1,10 @@
 # CadQuery Spool Power Station Terrain - Streamlit Gui
 
-Streamlit Gui that uses code from [cqspoolterrain](https://github.com/medicationforall/cqspoolterrain) to generate parametric Spools and cradles. 
+Streamlit App using code from [cqspoolterrain](https://github.com/medicationforall/cqspoolterrain) to generate parametric Spools and cradles. 
 
-![](01.png)
+[![](01.png)](https://spoolpower.streamlit.app//)
 
-View the demo as a [Streamlit App](https://spoolpower.streamlit.app//)
+View the demo [spoolpower.streamlit.app](https://spoolpower.streamlit.app//)
 
 
 
