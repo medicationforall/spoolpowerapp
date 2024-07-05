@@ -1,1 +1,3 @@
+streamlit==1.36.0
+numpy==1.25.1
 git+https://github.com/medicationforall/cqspoolterrain@1.2.1
