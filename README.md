@@ -26,16 +26,12 @@ View the demo [spoolpower.streamlit.app](https://spoolpower.streamlit.app//)
 
 1. Download the code
 2. Open a command line where the code resides
-3. Install streamlit
-    ``` bash
-    pip install streamlit
+3. Install requirements
     ```
-4. Install cqspoolterrain
+    pip install -r requirements
     ```
-    pip install git+https://github.com/medicationforall/cqspoolterrain
-    ```
-5. Run the streamlit app
+4. Run the streamlit app
     ```
     streamlit run app/app.py
     ```
-6. If everything worked; a browser should be opened to your local instance.
+5. If everything worked; a browser should be opened to your local instance.

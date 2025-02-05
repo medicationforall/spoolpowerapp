@@ -1,5 +1,8 @@
 ## Main - wip
 
+### 1.0.2
+* Updated README.md
+
 ### 1.0.1
 * Upped cqspoolterrain version to 1.2.1
   * This should hopefully resolve [issue #1 - Cradle generates a top face when greater than cut radius](https://github.com/medicationforall/spoolpowerapp/issues/1) 
